@@ -30,6 +30,8 @@
 #define BORDER "border"
 #define CONTAINER "container"
 #define CREATURE "creature"
+#define MAP "map"
+#define ROOM "room"
 
 using namespace rapidxml;
 using namespace std;
