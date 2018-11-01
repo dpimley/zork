@@ -5,6 +5,7 @@
 #include "Item.h"
 #include "Container.h"
 #include "Creature.h"
+#include "Trigger.h"
 
 typedef struct _border{
 	string direction;
@@ -20,10 +21,11 @@ public:
 	string status = "";
 	string type = "";
 	string description = "";
-	vector<_border *> border;
+	vector<_border *> borders;
 	vector<Container *> containers;
 	vector<Item *> items;
 	vector<Creature *> creatures;
+	vector<Trigger *> triggers;
 };
 
 #endif /* ROOM_H */

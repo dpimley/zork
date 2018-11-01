@@ -2,6 +2,7 @@
 #define CREATURE_H
 
 #include "Base.h"
+#include "Trigger.h"
 
 class Creature {
 public:
@@ -12,7 +13,8 @@ public:
 	string status = "";
 	string description = "";
 	vector<string> vulnerabilities;
-
+	Trigger * attack;
+	vector<Trigger *> triggers;
 };
 
 
