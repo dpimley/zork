@@ -12,6 +12,8 @@ public:
 	Game(string file);
 	virtual ~Game();
 
+	void printObjects();
+
 	xml_node<> * map;
 	vector<Room *> rooms;
 	vector<Item *> items;

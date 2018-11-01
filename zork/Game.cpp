@@ -1,5 +1,7 @@
 #include "Game.h"
 
+Game::~Game() {}
+
 Game::Game(string file) {
 	xml_document<> doc;
 	xml_node<> * root_node;
@@ -33,6 +35,12 @@ Game::Game(string file) {
 			creatures.push_back(_tmp_creature);
 		}
 		search_node = search_node->next_sibling();
+	}
+}
+
+void Game::printObjects(){
+
+	for (itr_room = rooms.begin(); itr_room != rooms.end(); ++itr_room){
 
 	}
 }
