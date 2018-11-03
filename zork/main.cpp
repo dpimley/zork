@@ -4,5 +4,6 @@
 int main(int argc, char * * argv){
 	Game * game = new Game("sample.txt.xml");
 	game->printObjects();
+	game->start();
 	return EXIT_SUCCESS;
 }

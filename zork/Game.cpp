@@ -41,6 +41,32 @@ Game::Game(string file) {
 	}
 }
 
+void Game::start(){
+	unsigned char end_game = 0;
+	string input_line = "";
+	string cur_command = "";
+
+	Room * cur_room = getRoom("Entrance");
+	if (NULL == cur_room){
+		cout << "Game Over" << endl;
+		return;
+	}
+	cout << cur_room->description << endl;
+
+	while (!end_game){
+		getline(cin, input_line);
+		cur_command = input_line.substr(0, input_line.find(" "));
+
+		if (string("i") == cur_command){
+			printInventory();
+		}
+		else if (string("n") == cur_command || string("s") == cur_command
+			|| string("e") == cur_command || string("w") == cur_command){
+
+		}
+	}
+}
+
 void Game::printObjects(){
 	for (vector<Room *>::iterator itr_room = rooms.begin(); itr_room != rooms.end(); ++itr_room){
 		cout << "Room Name: " << (*itr_room)->name << endl;
@@ -54,4 +80,30 @@ void Game::printObjects(){
 	for (vector<Creature *>::iterator itr_creature = creatures.begin(); itr_creature != creatures.end(); ++itr_creature) {
 		cout << "Creature Name: " << (*itr_creature)->name << endl;
 	}
+}
+
+void Game::printInventory(){
+	cout << "Inventory: ";
+	vector<Item *>::iterator itr_inv = inventory.begin();
+	for (itr_inv; itr_inv != inventory.end(); ++itr_inv){
+		cout << (*itr_inv)->name;
+	}
+	cout << endl;
+}
+
+Room * Game::getRoom(string r_name){
+	vector<Room *>::iterator itr_room = rooms.begin();
+	while (itr_room != rooms.end() && (*itr_room)->name != r_name){
+		++itr_room;
+	}
+	if ((*itr_room)->name == r_name){
+		return (*itr_room);
+	}
+	else{
+		return NULL;
+	}
+}
+
+Room * Game::switchRoom(string cur_command, string cur_room){
+
 }

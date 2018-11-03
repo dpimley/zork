@@ -12,7 +12,13 @@ public:
 	Game(string file);
 	virtual ~Game();
 
+	void start();
 	void printObjects();
+	void printInventory();
+	Room * getRoom(string r_name);
+	Room * switchRoom(string cmd, string cur_room);
+
+	vector<Item *> inventory;
 
 	xml_node<> * map;
 	vector<Room *> rooms;
