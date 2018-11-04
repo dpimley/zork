@@ -24,7 +24,10 @@ public:
 
 	unsigned char determineStatus(Trigger * trig);
 
+	void initItems();
+
 	Trigger * getReadyTriggers(Room * cur_room, string cur_command);
+	void runTrigger(Trigger * trig);
 
 	vector<string> split(string in, char delim);
 

@@ -12,6 +12,7 @@ public:
 	string name = "";
 	string status = "";
 	string description = "";
+	unsigned char open = 0;
 	vector<string> accept;
 	vector<Item *> items;
 };

@@ -21,14 +21,17 @@ Room::Room(xml_node<> * acc){
 		}
 		else if (CONTAINER == acc->name()){
 			Container * _tmp_c = new Container(acc);
+			_tmp_c->name = acc->value();
 			containers.push_back(_tmp_c);
 		}
 		else if (ITEM == acc->name()){
 			Item * _tmp_i = new Item(acc);
+			_tmp_i->name = acc->value();
 			items.push_back(_tmp_i);
 		}
 		else if (CREATURE == acc->name()){
 			Creature * _tmp_cr = new Creature(acc);
+			_tmp_cr->name = acc->value();
 			creatures.push_back(_tmp_cr);
 		}
 		else if (TRIGGER == acc->name()){

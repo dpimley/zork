@@ -16,7 +16,6 @@ public:
 	string type = "single";
 	string print = "";
 	string action = "";
-
 	unsigned int times_executed = 0;
 	unsigned int ready = 0;
 };

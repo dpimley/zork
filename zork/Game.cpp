@@ -16,7 +16,6 @@ Game::Game(string file) {
 
 	while (search_node != NULL){
 		string cur_name = search_node->name();
-		cout << cur_name << endl;
 		if (MAP == search_node->name()){
 			map = search_node;
 			search_node = search_node->first_node();
@@ -40,6 +39,7 @@ Game::Game(string file) {
 		}
 		search_node = search_node->next_sibling();
 	}
+	initItems();
 }
 
 void Game::start(){
@@ -49,7 +49,10 @@ void Game::start(){
 	vector<string> user_in_split;
 	Item * item_op = NULL;;
 	Trigger * trigger_check = NULL;
+	Container * container_check = NULL;
+	Container * container_gl = NULL;
 	unsigned char trig_priority = 0;
+	unsigned char taken = 0;
 
 	Room * cur_room = getRoom("Entrance");
 	if (NULL == cur_room){
@@ -65,7 +68,7 @@ void Game::start(){
 		if (validateCommand(cur_command)){
 			trigger_check = getReadyTriggers(cur_room, cur_command);
 			if (trigger_check){
-				cout << "ready trigger" << endl;
+				runTrigger(trigger_check);
 				trig_priority = 1;
 			}
 			else{
@@ -89,7 +92,49 @@ void Game::start(){
 						cout << "Game Over" << endl;
 					}
 					else {
-						cout << "Not at Exit" << endl;
+						cout << "Not at Exit." << endl;
+					}
+				}
+				else if (string("take") == cur_command) {
+					user_in_split = split(input_line, ' ');
+					if (user_in_split.size() != 2) {
+						cout << "Error" << endl;
+					}
+					else {
+						item_op = getItem(user_in_split.at(1));
+						if (item_op == NULL) {
+							cout << "Item: not found" << endl;
+						}
+						else {
+							if (searchInventory(user_in_split.at(1))) {
+								cout << "You already have that." << endl;
+							}
+							else if (cur_room->name != item_op->owner) {
+								container_check = getContainer(item_op->owner);
+								if (container_check){
+									for (vector<Container *>::iterator itr_container = cur_room->containers.begin(); itr_container != cur_room->containers.end(); ++itr_container) {
+										if ((*itr_container)->name == item_op->owner && container_check->open == 1) {
+											cout << "Item " << user_in_split.at(1) << " added to inventory." << endl;
+											inventory.push_back(item_op);
+											taken = 1;
+										}
+									}
+									if (!taken) {
+										cout << "Can't take that." << endl;
+									}
+									else {
+										taken = 0;
+									}
+								}
+								else {
+									cout << "Can't take that." << endl;
+								}
+							}
+							else {
+								cout << "Item " << user_in_split.at(1) << " added to inventory." << endl;
+								inventory.push_back(item_op);
+							}
+						}
 					}
 				}
 				else if (string("read") == cur_command) {
@@ -99,12 +144,15 @@ void Game::start(){
 					}
 					else {
 						item_op = searchInventory(user_in_split.at(1));
-					}
-					if (item_op == NULL) {
-						cout << "Item: " << user_in_split.at(1) << " not in inventory" << endl;
-					}
-					else {
-						cout << item_op->description << endl;
+						if (item_op == NULL) {
+							cout << "Item: " << user_in_split.at(1) << " not in inventory" << endl;
+						}
+						else if  (item_op->writing != ""){
+							cout << item_op->writing << endl;
+						}
+						else {
+							cout << "Nothing written." << endl;
+						}
 					}
 				}
 			}
@@ -134,7 +182,7 @@ void Game::printInventory(){
 	cout << "Inventory: ";
 	vector<Item *>::iterator itr_inv = inventory.begin();
 	for (itr_inv; itr_inv != inventory.end(); ++itr_inv){
-		cout << (*itr_inv)->name;
+		cout << (*itr_inv)->name << ", ";
 	}
 cout << endl;
 }
@@ -154,42 +202,36 @@ Room * Game::getRoom(string r_name){
 
 Creature * Game::getCreature(string cr_name){
 	vector<Creature *>::iterator itr_creature = creatures.begin();
-	while (itr_creature != creatures.end() && (*itr_creature)->name != cr_name){
+	while (itr_creature != creatures.end()){
+		if ((*itr_creature)->name == cr_name) {
+			return (*itr_creature);
+		}
 		++itr_creature;
 	}
-	if ((*itr_creature)->name == cr_name){
-		return (*itr_creature);
-	}
-	else{
-		return NULL;
-	}
+	return NULL;
 }
 
 Container * Game::getContainer(string co_name){
 	vector<Container *>::iterator itr_container = containers.begin();
-	while (itr_container != containers.end() && (*itr_container)->name != co_name){
+	while (itr_container != containers.end()){
+		if ((*itr_container)->name == co_name) {
+			return (*itr_container);
+		}
 		++itr_container;
+
 	}
-	if ((*itr_container)->name == co_name){
-		return (*itr_container);
-	}
-	else{
-		return NULL;
-	}
+	return NULL;
 }
 
 Item * Game::getItem(string i_name){
 	vector<Item *>::iterator itr_item = items.begin();
-	while (itr_item != items.end() && (*itr_item)->name != i_name){
+	while (itr_item != items.end()){
+		if ((*itr_item)->name == i_name) {
+			return (*itr_item);
+		}
 		++itr_item;
 	}
-	if ((*itr_item)->name == i_name){
-		return (*itr_item
-			);
-	}
-	else{
-		return NULL;
-	}
+	return NULL;
 }
 
 Room * Game::switchRoom(string cur_command, Room * cur_room){
@@ -227,8 +269,11 @@ Trigger * Game::getReadyTriggers(Room * cur_room, string cur_command){
 		if (determineStatus(ret_trigger)){
 			return ret_trigger;
 		}
+		else {
+			return NULL;
+		}
 	}
-
+	return NULL;
 }
 
 unsigned char Game::determineStatus(Trigger * trig){
@@ -238,7 +283,7 @@ unsigned char Game::determineStatus(Trigger * trig){
 
 	Item * object = NULL;
 
-	if (string("single") == trig->type && trig->times_executed == 1){
+	if (string("single") == trig->type && trig->ready == 1){
 		return 0;
 	}
 
@@ -246,18 +291,18 @@ unsigned char Game::determineStatus(Trigger * trig){
 	for (itr_conditions; itr_conditions != trig->conditions.end(); ++itr_conditions){
 		if ((*itr_conditions)->has == string("yes")){
 			loc_owner = (*itr_conditions)->owner;
-			if (loc_owner == string("")){
+			if (loc_owner == string("")) {
 
 			}
-			else
-			{
+			else if (loc_owner == string("inventory")) {
 				loc_object = (*itr_conditions)->object;
-				if (loc_object == string("inventory")){
-					object = searchInventory(loc_object);
-					if (NULL == object){
-						trig->ready = 1;
-						return 1;
-					}
+				object = searchInventory(loc_object);
+				if (NULL != object) {
+					trig->ready = 1;
+					return 1;
+				}
+				else {
+					return 0;
 				}
 			}
 		}
@@ -266,21 +311,28 @@ unsigned char Game::determineStatus(Trigger * trig){
 			if (loc_owner == string("")){
 
 			}
-			else
-			{
+			else if (loc_owner == string("inventory")){
 				loc_object = (*itr_conditions)->object;
-				if (loc_object == string("inventory")){
-					object = searchInventory(loc_object);
-					if (NULL != object){
-						trig->ready = 1;
-						return 1;
-					}
+				object = searchInventory(loc_object);
+				if (NULL == object){
+					trig->ready = 1;
+					return 1;
+				}
+				else {
+					return 0;
 				}
 			}
 		}
 		else{
-			cout << "ERROR" << endl;
+			cout << "Error" << endl;
 		}
+	}
+	return 0;
+}
+
+void Game::runTrigger(Trigger * trig) {
+	if (trig->ready) {
+		cout << trig->print << endl;
 	}
 }
 
@@ -315,4 +367,24 @@ unsigned char Game::validateCommand(string cur_command){
 		}
 	}
 	return 0;
+}
+
+void Game::initItems() {
+	Item * item_check = NULL;
+	for (vector<Room *>::iterator itr_room = rooms.begin(); itr_room != rooms.end(); ++itr_room) {
+		for (vector<Item *>::iterator itr_item = (*itr_room)->items.begin(); itr_item != (*itr_room)->items.end(); ++itr_item) {
+			item_check = getItem((*itr_item)->name);
+			if (item_check) {
+				item_check->owner = (*itr_room)->name;
+			}
+		}
+	}
+	for (vector<Container *>::iterator itr_container = containers.begin(); itr_container != containers.end(); ++itr_container) {
+		for (vector<Item *>::iterator itr_item = (*itr_container)->items.begin(); itr_item != (*itr_container)->items.end(); ++itr_item) {
+			item_check = getItem((*itr_item)->name);
+			if (item_check) {
+				item_check->owner = (*itr_container)->name;
+			}
+		}
+	}
 }

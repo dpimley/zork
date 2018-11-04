@@ -14,6 +14,7 @@ public:
 	string writing = "";
 	string turn_on_print = "";
 	string turn_on_action = "";
+	string owner = "";
 };
 
 #endif /* ITEM_H */
