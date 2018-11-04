@@ -14,3 +14,14 @@ Trigger * Base::searchTriggers(string cur_command) {
 	}
 	return NULL;
 }
+
+Trigger * Base::searchNCTriggers() {
+	vector<Trigger *>::iterator itr_trigger = triggers.begin();
+	while (itr_trigger != triggers.end()) {
+		if ((*itr_trigger)) {
+			return (*itr_trigger);
+		}
+		++itr_trigger;
+	}
+	return NULL;
+}

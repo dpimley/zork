@@ -8,9 +8,6 @@ public:
 	Item(xml_node<> * acc);
 	virtual ~Item();
 
-	string name = "";
-	string status = "";
-	string description = "";
 	string writing = "";
 	string turn_on_print = "";
 	string turn_on_action = "";

@@ -17,6 +17,7 @@ Container::Container(xml_node<> * acc){
 		}
 		else if (ITEM == acc->name()){
 			Item * _tmp1 = new Item(acc);
+			_tmp1->name = acc->value();
 			items.push_back(_tmp1);
 		}
 		else if (TRIGGER == acc->name()){

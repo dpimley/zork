@@ -47,6 +47,12 @@ public:
 
 	Trigger * searchTriggers(string cur_command);
 
+	Trigger * searchNCTriggers();
+
+	string name = "";
+	string status = "";
+	string description = "";
+
 	vector<Trigger *> triggers;
 };
 

@@ -8,9 +8,6 @@ public:
 	Creature(xml_node<> * acc);
 	virtual ~Creature();
 
-	string name = "";
-	string status = "";
-	string description = "";
 	vector<string> vulnerabilities;
 	Trigger * attack;
 };

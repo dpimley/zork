@@ -22,16 +22,27 @@ public:
 	Room * switchRoom(string cmd, Room * cur_room);
 	Item * searchInventory(string i_name);
 
+	void printContainerItems(Container * cont);
+
 	unsigned char determineStatus(Trigger * trig);
 
 	void initItems();
 
 	Trigger * getReadyTriggers(Room * cur_room, string cur_command);
+
+	void runNCTriggers(Room * cur_room);
+
 	void runTrigger(Trigger * trig);
 
 	vector<string> split(string in, char delim);
 
 	unsigned char validateCommand(string cur_command);
+
+	void actionExecute(string action);
+
+	Base * searchAll(string o_name);
+
+	void actionDelete(string o_name);
 
 	vector<Item *> inventory;
 
@@ -40,6 +51,7 @@ public:
 	vector<Item *> items;
 	vector<Container *> containers;
 	vector<Creature *> creatures;
+	unsigned char end_game = 0;
 };
 
 #endif /* GAME_H */

@@ -9,9 +9,6 @@ public:
 	Container(xml_node<> * acc);
 	virtual ~Container();
 
-	string name = "";
-	string status = "";
-	string description = "";
 	unsigned char open = 0;
 	vector<string> accept;
 	vector<Item *> items;

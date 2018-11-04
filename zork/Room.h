@@ -12,10 +12,7 @@ public:
 	Room(xml_node<> * acc);
 	virtual ~Room();
 
-	string name = "";
-	string status = "";
 	string type = "";
-	string description = "";
 	vector<Border *> borders;
 	vector<Container *> containers;
 	vector<Item *> items;
