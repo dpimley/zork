@@ -39,4 +39,21 @@ Room::Room(xml_node<> * acc){
 	}
 }
 
+Trigger * Room::getTriggers(string cur_command) {
+	Trigger * ret_trigger = NULL;
+	vector<Trigger
+
+	ret_trigger = searchTriggers(cur_command);
+	if (ret_trigger) {
+		return ret_trigger;
+	}
+
+	vector<Creature *>::iterator itr_creature = creatures.begin();
+	while (itr_creature != creatures.end()) {
+		if (cur_command == (*itr_creature)->triggers)
+	}
+
+	
+}
+
 Room::~Room() {}

@@ -12,6 +12,8 @@ public:
 	Room(xml_node<> * acc);
 	virtual ~Room();
 
+	Trigger * getTriggers(string cur_command);
+
 	string name = "";
 	string status = "";
 	string type = "";
