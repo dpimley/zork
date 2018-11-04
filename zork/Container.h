@@ -3,7 +3,6 @@
 
 #include "Base.h"
 #include "Item.h"
-#include "Trigger.h"
 
 class Container : public Base {
 public:
@@ -15,7 +14,6 @@ public:
 	string description = "";
 	vector<string> accept;
 	vector<Item *> items;
-	vector<Trigger *> triggers;
 };
 
 #endif /* CONTAINER_H */

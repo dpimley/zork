@@ -16,7 +16,10 @@ public:
 	void printObjects();
 	void printInventory();
 	Room * getRoom(string r_name);
-	Room * switchRoom(string cmd, string cur_room);
+	Room * switchRoom(string cmd, Room * cur_room);
+	Item * searchInventory(string i_name);
+
+	vector<string> split(string in, char delim);
 
 	vector<Item *> inventory;
 

@@ -2,9 +2,8 @@
 #define CREATURE_H
 
 #include "Base.h"
-#include "Trigger.h"
 
-class Creature {
+class Creature : public Base {
 public:
 	Creature(xml_node<> * acc);
 	virtual ~Creature();
@@ -14,7 +13,6 @@ public:
 	string description = "";
 	vector<string> vulnerabilities;
 	Trigger * attack;
-	vector<Trigger *> triggers;
 };
 
 

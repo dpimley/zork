@@ -19,8 +19,8 @@ Item::Item(xml_node<> * acc){
 			xml_node<> * _tmp1 = acc->first_node("print");
 			xml_node<> * _tmp2 = acc->first_node("action");
 
-			turn_on.print = _tmp1->value();
-			turn_on.action = _tmp2->value();
+			turn_on_print = _tmp1->value();
+			turn_on_action = _tmp2->value();
 		}
 		else if (TRIGGER == acc->name()){
 			Trigger * _tmp1 = new Trigger(acc);

@@ -8,6 +8,8 @@
 #include "rapidxml-1.13\rapidxml_print.hpp"
 #include "rapidxml-1.13\rapidxml_utils.hpp"
 
+#include "Trigger.h"
+
 #define NAME string("name")
 #define STATUS string("status")
 #define TYPE string("type")
@@ -40,6 +42,10 @@ class Base {
 public:
 	Base();
 	virtual ~Base();
+
+	Trigger * searchTriggers(string cur_command);
+
+	vector<Trigger *> triggers;
 };
 
 #endif /* BASE_H */

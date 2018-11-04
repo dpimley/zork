@@ -1,21 +1,17 @@
 #ifndef TRIGGER_H
 #define TRIGGER_H
 
-#include "Base.h"
+#include "Condition.h"
 
-typedef struct _condition{
-	string has;
-	string object;
-	string owner;
-	string status;
-}_condition;
+using namespace rapidxml;
+using namespace std;
 
 class Trigger {
 public:
 	Trigger(xml_node<> * acc);
 	virtual ~Trigger();
 
-	vector<_condition *> conditions;
+	vector<Condition *> conditions;
 	string command = "";
 	string type = "";
 	string print = "";

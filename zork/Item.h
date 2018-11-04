@@ -2,14 +2,8 @@
 #define ITEM_H
 
 #include "Base.h"
-#include "Trigger.h"
 
-typedef struct _turn_on{
-	string print;
-	string action;
-} turn_on;
-
-class Item {
+class Item : public Base{
 public:
 	Item(xml_node<> * acc);
 	virtual ~Item();
@@ -18,8 +12,8 @@ public:
 	string status = "";
 	string description = "";
 	string writing = "";
-	_turn_on turn_on;
-	vector<Trigger *> triggers;
+	string turn_on_print = "";
+	string turn_on_action = "";
 };
 
 #endif /* ITEM_H */
