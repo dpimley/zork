@@ -35,6 +35,8 @@
 #define MAP string("map")
 #define ROOM string("room")
 
+#define NUM_COMMANDS 13
+
 using namespace rapidxml;
 using namespace std;
 

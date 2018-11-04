@@ -16,10 +16,19 @@ public:
 	void printObjects();
 	void printInventory();
 	Room * getRoom(string r_name);
+	Creature * getCreature(string cr_name);
+	Container * getContainer(string co_name);
+	Item * getItem(string i_name);
 	Room * switchRoom(string cmd, Room * cur_room);
 	Item * searchInventory(string i_name);
 
+	unsigned char determineStatus(Trigger * trig);
+
+	Trigger * getReadyTriggers(Room * cur_room, string cur_command);
+
 	vector<string> split(string in, char delim);
+
+	unsigned char validateCommand(string cur_command);
 
 	vector<Item *> inventory;
 

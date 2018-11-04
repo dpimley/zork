@@ -13,9 +13,12 @@ public:
 
 	vector<Condition *> conditions;
 	string command = "";
-	string type = "";
+	string type = "single";
 	string print = "";
 	string action = "";
+
+	unsigned int times_executed = 0;
+	unsigned int ready = 0;
 };
 
 #endif /* TRIGGER_H */

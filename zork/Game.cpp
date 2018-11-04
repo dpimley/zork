@@ -48,6 +48,8 @@ void Game::start(){
 	string cur_command = "";
 	vector<string> user_in_split;
 	Item * item_op = NULL;;
+	Trigger * trigger_check = NULL;
+	unsigned char trig_priority = 0;
 
 	Room * cur_room = getRoom("Entrance");
 	if (NULL == cur_room){
@@ -60,43 +62,55 @@ void Game::start(){
 		getline(cin, input_line);
 		cur_command = input_line.substr(0, input_line.find(" "));
 
-		if (string("i") == cur_command){
-			printInventory();
-		}
-		else if (string("n") == cur_command || string("s") == cur_command
-			|| string("e") == cur_command || string("w") == cur_command){
-			Room * next_room = switchRoom(cur_command, cur_room);
-			if (NULL != next_room) {
-				cur_room = next_room;
+		if (validateCommand(cur_command)){
+			trigger_check = getReadyTriggers(cur_room, cur_command);
+			if (trigger_check){
+				cout << "ready trigger" << endl;
+				trig_priority = 1;
+			}
+			else{
+				trig_priority = 0;
+			}
+
+			if (!trig_priority){
+				if (string("i") == cur_command){
+					printInventory();
+				}
+				else if (string("n") == cur_command || string("s") == cur_command
+					|| string("e") == cur_command || string("w") == cur_command){
+					Room * next_room = switchRoom(cur_command, cur_room);
+					if (NULL != next_room) {
+						cur_room = next_room;
+					}
+				}
+				else if (string("open exit") == input_line) {
+					if (string("exit") == cur_room->name) {
+						end_game = 1;
+						cout << "Game Over" << endl;
+					}
+					else {
+						cout << "Not at Exit" << endl;
+					}
+				}
+				else if (string("read") == cur_command) {
+					user_in_split = split(input_line, ' ');
+					if (user_in_split.size() != 2) {
+						cout << "Error" << endl;
+					}
+					else {
+						item_op = searchInventory(user_in_split.at(1));
+					}
+					if (item_op == NULL) {
+						cout << "Item: " << user_in_split.at(1) << " not in inventory" << endl;
+					}
+					else {
+						cout << item_op->description << endl;
+					}
+				}
 			}
 		}
-		else if (string("open exit") == input_line) {
-			if (string("exit") == cur_room->name) {
-				end_game = 1;
-				cout << "Game Over" << endl;
-			}
-			else {
-				cout << "Not at Exit" << endl;
-			}
-		}
-		//else if (string("take") == cur_command) {
-		//	item_op = input_line.substr(input_line.find(" ", input_line.find("\n")));
-		//	
-		//}
-		else if (string("read") == cur_command) {
-			user_in_split = split(input_line, ' ');
-			if (user_in_split.size() != 2) {
-				cout << "Error" << endl;
-			}
-			else {
-				item_op = searchInventory(user_in_split.at(1));
-			}
-			if (item_op == NULL) {
-				cout << "Item: " << user_in_split.at(1) << " not in inventory" << endl;
-			}
-			else {
-				cout << item_op->description << endl;
-			}
+		else{
+			cout << "Error" << endl;
 		}
 	}
 }
@@ -122,7 +136,7 @@ void Game::printInventory(){
 	for (itr_inv; itr_inv != inventory.end(); ++itr_inv){
 		cout << (*itr_inv)->name;
 	}
-	cout << endl;
+cout << endl;
 }
 
 Room * Game::getRoom(string r_name){
@@ -132,6 +146,46 @@ Room * Game::getRoom(string r_name){
 	}
 	if ((*itr_room)->name == r_name){
 		return (*itr_room);
+	}
+	else{
+		return NULL;
+	}
+}
+
+Creature * Game::getCreature(string cr_name){
+	vector<Creature *>::iterator itr_creature = creatures.begin();
+	while (itr_creature != creatures.end() && (*itr_creature)->name != cr_name){
+		++itr_creature;
+	}
+	if ((*itr_creature)->name == cr_name){
+		return (*itr_creature);
+	}
+	else{
+		return NULL;
+	}
+}
+
+Container * Game::getContainer(string co_name){
+	vector<Container *>::iterator itr_container = containers.begin();
+	while (itr_container != containers.end() && (*itr_container)->name != co_name){
+		++itr_container;
+	}
+	if ((*itr_container)->name == co_name){
+		return (*itr_container);
+	}
+	else{
+		return NULL;
+	}
+}
+
+Item * Game::getItem(string i_name){
+	vector<Item *>::iterator itr_item = items.begin();
+	while (itr_item != items.end() && (*itr_item)->name != i_name){
+		++itr_item;
+	}
+	if ((*itr_item)->name == i_name){
+		return (*itr_item
+			);
 	}
 	else{
 		return NULL;
@@ -152,6 +206,7 @@ Room * Game::switchRoom(string cur_command, Room * cur_room){
 		}
 		++itr_border;
 	}
+	return NULL;
 }
 
 Item * Game::searchInventory(string i_name) {
@@ -162,6 +217,71 @@ Item * Game::searchInventory(string i_name) {
 		}
 	}
 	return NULL;
+}
+
+Trigger * Game::getReadyTriggers(Room * cur_room, string cur_command){
+	Trigger * ret_trigger = NULL;
+
+	ret_trigger = cur_room->searchTriggers(cur_command);
+	if (ret_trigger){
+		if (determineStatus(ret_trigger)){
+			return ret_trigger;
+		}
+	}
+
+}
+
+unsigned char Game::determineStatus(Trigger * trig){
+
+	string loc_owner = "";
+	string loc_object = "";
+
+	Item * object = NULL;
+
+	if (string("single") == trig->type && trig->times_executed == 1){
+		return 0;
+	}
+
+	vector<Condition *>::iterator itr_conditions = trig->conditions.begin();
+	for (itr_conditions; itr_conditions != trig->conditions.end(); ++itr_conditions){
+		if ((*itr_conditions)->has == string("yes")){
+			loc_owner = (*itr_conditions)->owner;
+			if (loc_owner == string("")){
+
+			}
+			else
+			{
+				loc_object = (*itr_conditions)->object;
+				if (loc_object == string("inventory")){
+					object = searchInventory(loc_object);
+					if (NULL == object){
+						trig->ready = 1;
+						return 1;
+					}
+				}
+			}
+		}
+		else if ((*itr_conditions)->has == string("no")){
+			loc_owner = (*itr_conditions)->owner;
+			if (loc_owner == string("")){
+
+			}
+			else
+			{
+				loc_object = (*itr_conditions)->object;
+				if (loc_object == string("inventory")){
+					object = searchInventory(loc_object);
+					if (NULL != object){
+						trig->ready = 1;
+						return 1;
+					}
+				}
+			}
+		}
+		else{
+			cout << "ERROR" << endl;
+		}
+	}
 }
 
 vector<string> Game::split(string in, char delim) {
@@ -182,4 +302,17 @@ vector<string> Game::split(string in, char delim) {
 	}
 	ret_split.push_back(in.substr(b_cur, e_cur + 1));
 	return ret_split;
+}
+
+unsigned char Game::validateCommand(string cur_command){
+	string valid_commands[] = {"n", "s", "e", "w", "i",
+							   "take", "open", "open exit",
+	                           "read", "drop", "put", "turn on",
+							   "attack"};
+	for (int i = 0; i < NUM_COMMANDS; i++){
+		if (cur_command == valid_commands[i]){
+			return 1;
+		}
+	}
+	return 0;
 }
