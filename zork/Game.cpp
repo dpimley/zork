@@ -875,6 +875,7 @@ void Game::attackExecute(Creature * crea, Item * item) {
 	for (itr_str; itr_str != crea->vulnerabilities.end(); ++itr_str) {
 		if ((*itr_str) == item->name) {
 			if (determineStatus(crea->attack)) {
+				removeFromInventory(item->name);
 				actionExecute(crea->attack);
 				return;
 			}
