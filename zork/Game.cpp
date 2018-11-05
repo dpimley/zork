@@ -480,6 +480,8 @@ void Game::printContainerItems(Container * cont) {
 Trigger * Game::getReadyTriggers(Room * cur_room, string input_line){
 	Trigger * ret_trigger = NULL;
 	Creature * creature_op = NULL;
+	Container * container_op = NULL;
+	Item * item_op = NULL;
 
 	ret_trigger = cur_room->searchTriggers(input_line);
 	if (ret_trigger){
@@ -492,6 +494,28 @@ Trigger * Game::getReadyTriggers(Room * cur_room, string input_line){
 	for (itr_creature; itr_creature != cur_room->creatures.end(); ++itr_creature) {
 		creature_op = getCreature((*itr_creature)->name);
 		ret_trigger = creature_op->searchTriggers(input_line);
+		if (ret_trigger) {
+			if (determineStatus(ret_trigger)) {
+				return ret_trigger;
+			}
+		}
+	}
+
+	vector<Container *>::iterator itr_container = cur_room->containers.begin();
+	for (itr_container; itr_container != cur_room->containers.end(); ++itr_container) {
+		container_op = getContainer((*itr_container)->name);
+		ret_trigger = container_op->searchTriggers(input_line);
+		if (ret_trigger) {
+			if (determineStatus(ret_trigger)) {
+				return ret_trigger;
+			}
+		}
+	}
+
+	vector<Item *>::iterator itr_item = cur_room->items.begin();
+	for (itr_item; itr_item != cur_room->items.end(); ++itr_item) {
+		item_op = getItem((*itr_item)->name);
+		ret_trigger = item_op->searchTriggers(input_line);
 		if (ret_trigger) {
 			if (determineStatus(ret_trigger)) {
 				return ret_trigger;
@@ -924,7 +948,11 @@ void Game::attackExecute(Creature * crea, Item * item) {
 	vector<string>::iterator itr_str = crea->vulnerabilities.begin();
 	for (itr_str; itr_str != crea->vulnerabilities.end(); ++itr_str) {
 		if ((*itr_str) == item->name) {
-			if (determineStatus(crea->attack)) {
+			if (!crea->attack){
+				cout << "You assault the " << crea->name << " with the " << item->name << "." << endl;
+				return;
+			}
+			else if (determineStatus(crea->attack)) {
 				cout << "You assault the " << crea->name << " with the " << item->name << "." << endl;
 				actionExecute(crea->attack);
 				return;
