@@ -57,6 +57,7 @@ void Game::start(){
 	unsigned char drop_token = 0;
 	unsigned char bad_creature = 1;
 	unsigned char e_i = 0;
+	unsigned char open_flag = 0;
 
 	Room * cur_room = getRoom("Entrance");
 	if (NULL == cur_room){
@@ -116,8 +117,13 @@ void Game::start(){
 								if ((*itr_container)->name == user_in_split.at(1)) {
 									container_check->open = 1;
 									printContainerItems(container_check);
+									open_flag = 1;
 								}
 							}
+							if (!open_flag){
+								cout << "Container: not found" << endl;
+							}
+							open_flag = 0;
 						}
 					}
 				}
@@ -276,14 +282,17 @@ void Game::start(){
 						if (!searchInventory(item_op->name)) {
 							cout << "Item not found in inventory." << endl;
 						}
-						
-						vector<Container *>::iterator itr_container = cur_room->containers.begin();
-						for (itr_container; itr_container != cur_room->containers.end(); ++itr_container) {
-							if ((*itr_container)->name == container_check->name) {
-								item_op->owner = container_check->name;
-								container_check->items.push_back(item_op);
-								cout << "Item " << item_op->name << " added to " << container_check->name << "." << endl;
-								removeFromInventory(item_op->name);
+						else{
+							vector<Container *>::iterator itr_container = cur_room->containers.begin();
+							for (itr_container; itr_container != cur_room->containers.end(); ++itr_container) {
+								if ((*itr_container)->name == container_check->name) {
+									if (containerAccepts(container_check, item_op)){
+										item_op->owner = container_check->name;
+										container_check->items.push_back(item_op);
+										cout << "Item " << item_op->name << " added to " << container_check->name << "." << endl;
+										removeFromInventory(item_op->name);
+									}
+								}
 							}
 						}
 					}
@@ -296,6 +305,20 @@ void Game::start(){
 			cout << "Error" << endl;
 		}
 	}
+}
+
+unsigned char Game::containerAccepts(Container * cont, Item * item){
+	unsigned char ret = 0;
+	vector<string>::iterator itr_container = cont->accept.begin();
+	if (cont->accept.size() == 0){
+		return 1;
+	}
+	for (itr_container; itr_container != cont->accept.end(); ++itr_container){
+		if (item->name == (*itr_container)){
+			return 1;
+		}
+	}
+	return 0;
 }
 
 void Game::printObjects(){

@@ -24,6 +24,8 @@ public:
 
 	void printContainerItems(Container * cont);
 
+	unsigned char containerAccepts(Container * cont, Item * item);
+
 	unsigned char determineStatus(Trigger * trig);
 
 	void initItems();
