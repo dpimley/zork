@@ -67,12 +67,20 @@ void Game::start(){
 	cout << cur_room->description << endl;
 
 	while (!end_game){
-		getline(cin, input_line);
-		cur_command = input_line.substr(0, input_line.find(" "));
-		user_in_split = split(input_line, ' ');
+		if (!input_override) {
+			getline(cin, input_line);
+			cur_command = input_line.substr(0, input_line.find(" "));
+			user_in_split = split(input_line, ' ');
+		}
+		else {
+			input_line = input_override_str;
+			cur_command = input_line.substr(0, input_line.find(" "));
+			user_in_split = split(input_line, ' ');
+			input_override = 0;
+		}
 
 		if (validateCommand(cur_command)){
-			trigger_check = getReadyTriggers(cur_room, cur_command);
+			trigger_check = getReadyTriggers(cur_room, input_line);
 			if (trigger_check){
 				actionExecute(trigger_check);
 				trig_priority = 1;
@@ -200,6 +208,7 @@ void Game::start(){
 									inventory.erase(inventory.begin() + i);
 									cout << user_in_split.at(1) << " dropped." << endl;
 								}
+								drop_token = 0;
 							}
 						}
 					}
@@ -468,16 +477,25 @@ void Game::printContainerItems(Container * cont) {
 	cout << endl;
 }
 
-Trigger * Game::getReadyTriggers(Room * cur_room, string cur_command){
+Trigger * Game::getReadyTriggers(Room * cur_room, string input_line){
 	Trigger * ret_trigger = NULL;
+	Creature * creature_op = NULL;
 
-	ret_trigger = cur_room->searchTriggers(cur_command);
+	ret_trigger = cur_room->searchTriggers(input_line);
 	if (ret_trigger){
 		if (determineStatus(ret_trigger)){
 			return ret_trigger;
 		}
-		else {
-			return NULL;
+	}
+
+	vector<Creature *>::iterator itr_creature = cur_room->creatures.begin();
+	for (itr_creature; itr_creature != cur_room->creatures.end(); ++itr_creature) {
+		creature_op = getCreature((*itr_creature)->name);
+		ret_trigger = creature_op->searchTriggers(input_line);
+		if (ret_trigger) {
+			if (determineStatus(ret_trigger)) {
+				return ret_trigger;
+			}
 		}
 	}
 	return NULL;
@@ -695,14 +713,17 @@ void Game::actionExecute(Trigger * trig) {
 		Base * object = NULL;
 		vector<string> user_input_split = split((*itr_action), ' ');
 		if (string("Add") == user_input_split.at(0) && user_input_split.size() == 4) {
+			trig->times_executed += 1;
 			actionAdd(user_input_split.at(1), user_input_split.at(3));
 		}
 		else if (string("Delete") == user_input_split.at(0) && user_input_split.size() == 2) {
+			trig->times_executed += 1;
 			actionDelete(user_input_split.at(1));
 		}
 		else if (string("Update") == user_input_split.at(0) && user_input_split.size() == 4) {
 			object = searchAll(user_input_split.at(1));
 			if (object) {
+				trig->times_executed += 1;
 				object->status = user_input_split.at(3);
 			}
 			else {
@@ -712,6 +733,11 @@ void Game::actionExecute(Trigger * trig) {
 		else if (string("Game") == user_input_split.at(0) && string("Over") == user_input_split.at(1) && user_input_split.size() == 2) {
 			cout << "Game Over" << endl;
 			end_game = 1;
+		}
+		else if (validateCommand((user_input_split.at(0)))) {
+			trig->times_executed += 1;
+			input_override = 1;
+			input_override_str = (*itr_action);
 		}
 	}
 }
@@ -737,6 +763,10 @@ void Game::actionRun(string action) {
 	else if (string("Game") == user_input_split.at(0) && string("Over") == user_input_split.at(1) && user_input_split.size() == 2) {
 		cout << "Game Over" << endl;
 		end_game = 1;
+	}
+	else if (validateCommand((user_input_split.at(0)))) {
+		input_override = 1;
+		input_override_str = action;
 	}
 }
 
@@ -896,7 +926,6 @@ void Game::attackExecute(Creature * crea, Item * item) {
 		if ((*itr_str) == item->name) {
 			if (determineStatus(crea->attack)) {
 				cout << "You assault the " << crea->name << " with the " << item->name << "." << endl;
-				removeFromInventory(item->name);
 				actionExecute(crea->attack);
 				return;
 			}

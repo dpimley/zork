@@ -9,7 +9,7 @@ public:
 	virtual ~Creature();
 
 	vector<string> vulnerabilities;
-	Trigger * attack;
+	Trigger * attack = NULL;;
 };
 
 
