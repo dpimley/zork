@@ -51,9 +51,12 @@ void Game::start(){
 	Trigger * trigger_check = NULL;
 	Container * container_check = NULL;
 	Container * container_gl = NULL;
+	Creature * creature_op = NULL;
 	unsigned char trig_priority = 0;
 	unsigned char taken = 0;
 	unsigned char drop_token = 0;
+	unsigned char bad_creature = 1;
+	unsigned char e_i = 0;
 
 	Room * cur_room = getRoom("Entrance");
 	if (NULL == cur_room){
@@ -71,8 +74,7 @@ void Game::start(){
 		if (validateCommand(cur_command)){
 			trigger_check = getReadyTriggers(cur_room, cur_command);
 			if (trigger_check){
-				cout << trigger_check->print << endl;
-				actionExecute(trigger_check->action);
+				actionExecute(trigger_check);
 				trig_priority = 1;
 			}
 			else{
@@ -91,7 +93,7 @@ void Game::start(){
 					}
 				}
 				else if (string("open exit") == input_line) {
-					if (string("exit") == cur_room->name) {
+					if (string("exit") == cur_room->type) {
 						end_game = 1;
 						cout << "Game Over" << endl;
 					}
@@ -112,13 +114,8 @@ void Game::start(){
 						else {
 							for (vector<Container *>::iterator itr_container = cur_room->containers.begin(); itr_container != cur_room->containers.end(); ++itr_container) {
 								if ((*itr_container)->name == user_in_split.at(1)) {
-									if (container_check->accept.size() == 0) {
-										container_check->open = 1;
-										printContainerItems(container_check);
-									}
-									else {
-
-									}
+									container_check->open = 1;
+									printContainerItems(container_check);
 								}
 							}
 						}
@@ -141,12 +138,15 @@ void Game::start(){
 							else if (cur_room->name != item_op->owner) {
 								container_check = getContainer(item_op->owner);
 								if (container_check){
+									e_i = 0;
 									for (vector<Container *>::iterator itr_container = cur_room->containers.begin(); itr_container != cur_room->containers.end(); ++itr_container) {
 										if ((*itr_container)->name == item_op->owner && container_check->open == 1) {
 											cout << "Item " << user_in_split.at(1) << " added to inventory." << endl;
+											//container_check->items.erase()
 											inventory.push_back(item_op);
 											taken = 1;
 										}
+										e_i++;
 									}
 									if (!taken) {
 										cout << "Can't take that." << endl;
@@ -213,7 +213,7 @@ void Game::start(){
 						}
 						else {
 							cout << item_op->turn_on_print << endl;
-							actionExecute(item_op->turn_on_action);
+							actionRun(item_op->turn_on_action);
 						}
 					}
 				}
@@ -232,6 +232,52 @@ void Game::start(){
 						}
 						else {
 							cout << "Nothing written." << endl;
+						}
+					}
+				}
+				else if (string("attack") == user_in_split.at(0) && string("with") == user_in_split.at(2) && user_in_split.size() == 4) {
+					creature_op = getCreature(user_in_split.at(1));
+					item_op = getItem(user_in_split.at(3));
+					vector<Creature *>::iterator creature_room = cur_room->creatures.begin();
+					for (creature_room; creature_room != cur_room->creatures.end(); ++creature_room) {
+						if ((*creature_room)->name == creature_op->name) {
+							bad_creature = 0;
+						}
+					}
+					if (!creature_op || bad_creature) {
+						cout << "You can't attack that creature." << endl;
+					}
+					else if (!item_op) {
+						cout << "You can't use that." << endl;
+					}
+					else {
+						attackExecute(creature_op, item_op);
+					}
+
+					bad_creature = 1;
+				}
+				else if (string("put") == user_in_split.at(0) && string("in") == user_in_split.at(2) && user_in_split.size() == 4) {
+					item_op = getItem(user_in_split.at(1));
+					container_check = getContainer(user_in_split.at(3));
+					if (!item_op) {
+						cout << "You don't have that item." << endl;
+					}
+					else if (!container_check) {
+						cout << "That is not a container." << endl;
+					}
+					else {
+						if (!searchInventory(item_op->name)) {
+							cout << "Item not found in inventory." << endl;
+						}
+						
+						vector<Container *>::iterator itr_container = cur_room->containers.begin();
+						for (itr_container; itr_container != cur_room->containers.end(); ++itr_container) {
+							if ((*itr_container)->name == container_check->name) {
+								item_op->owner = container_check->name;
+								container_check->items.push_back(item_op);
+								cout << "Item " << item_op->name << " added to " << container_check->name << "." << endl;
+								//to do remove from inventory and check for accepts
+							}
 						}
 					}
 				}
@@ -261,6 +307,10 @@ void Game::printObjects(){
 }
 
 void Game::printInventory(){
+	if (inventory.size() == 0) {
+		cout << "Inventory: empty" << endl;
+		return;
+	}
 	unsigned char first_item = 1;
 	cout << "Inventory: ";
 	vector<Item *>::iterator itr_inv = inventory.begin();
@@ -278,15 +328,13 @@ cout << endl;
 
 Room * Game::getRoom(string r_name){
 	vector<Room *>::iterator itr_room = rooms.begin();
-	while (itr_room != rooms.end() && (*itr_room)->name != r_name){
+	while (itr_room != rooms.end()){
+		if ((*itr_room)->name == r_name) {
+			return (*itr_room);
+		}
 		++itr_room;
 	}
-	if ((*itr_room)->name == r_name){
-		return (*itr_room);
-	}
-	else{
-		return NULL;
-	}
+	return NULL;
 }
 
 Creature * Game::getCreature(string cr_name){
@@ -330,12 +378,9 @@ Room * Game::switchRoom(string cur_command, Room * cur_room){
 			cout << next_room->description << endl;
 			return next_room;
 		}
-		else {
-			cout << "Can't go that way." << endl;
-			return NULL;
-		}
 		++itr_border;
 	}
+	cout << "Can't go that way." << endl;
 	return NULL;
 }
 
@@ -402,8 +447,7 @@ void Game::runNCTriggers(Room * cur_room) {
 		if (s_creature) {
 			ret_trigger = s_creature->searchNCTriggers();
 			if (ret_trigger && determineStatus(ret_trigger)) {
-				cout << ret_trigger->print << endl;
-				actionExecute(ret_trigger->action);
+				actionExecute(ret_trigger);
 			}
 		}
 	}
@@ -413,8 +457,7 @@ void Game::runNCTriggers(Room * cur_room) {
 		if (s_container) {
 			ret_trigger = s_container->searchNCTriggers();
 			if (ret_trigger && determineStatus(ret_trigger)) {
-				cout << ret_trigger->print << endl;
-				actionExecute(ret_trigger->action);
+				actionExecute(ret_trigger);
 			}
 		}
 	}
@@ -424,8 +467,7 @@ void Game::runNCTriggers(Room * cur_room) {
 		if (s_item) {
 			ret_trigger = s_item->searchNCTriggers();
 			if (ret_trigger && determineStatus(ret_trigger)) {
-				cout << ret_trigger->print << endl;
-				actionExecute(ret_trigger->action);
+				actionExecute(ret_trigger);
 			}
 		}
 	}
@@ -436,7 +478,8 @@ unsigned char Game::determineStatus(Trigger * trig){
 	string loc_owner = "";
 	string loc_object = "";
 
-	Item * object = NULL;
+	Item * i_object = NULL;
+	Container * s_container = NULL;
 
 	vector<Condition *>::iterator itr_conditions;
 
@@ -475,13 +518,26 @@ unsigned char Game::determineStatus(Trigger * trig){
 			}
 			else if (loc_owner == string("inventory")) {
 				loc_object = (*itr_conditions)->object;
-				object = searchInventory(loc_object);
-				if (NULL != object) {
+				i_object = searchInventory(loc_object);
+				if (NULL != i_object) {
 					trig->ready = 1;
 					return 1;
 				}
 				else {
 					return 0;
+				}
+			}
+			else {
+				s_container = getContainer(loc_owner);
+				i_object = getItem((*itr_conditions)->object);
+				if (s_container) {
+					if (s_container->name == i_object->owner) {
+						trig->ready = 1;
+						return 1;
+					}
+					else {
+						return 0;
+					}
 				}
 			}
 		}
@@ -493,13 +549,26 @@ unsigned char Game::determineStatus(Trigger * trig){
 			}
 			else if (loc_owner == string("inventory")){
 				loc_object = (*itr_conditions)->object;
-				object = searchInventory(loc_object);
-				if (NULL == object){
+				i_object = searchInventory(loc_object);
+				if (NULL == i_object){
 					trig->ready = 1;
 					return 1;
 				}
 				else {
 					return 0;
+				}
+			}
+			else {
+				s_container = getContainer(loc_owner);
+				i_object = getItem((*itr_conditions)->object);
+				if (s_container) {
+					if (s_container->name == i_object->owner) {
+						trig->ready = 1;
+						return 1;
+					}
+					else {
+						return 0;
+					}
 				}
 			}
 		}
@@ -563,13 +632,44 @@ void Game::initItems() {
 		}
 	}
 }
-void Game::actionExecute(string action) {
-	vector<string> user_input_split = split(action, ' ');
+void Game::actionExecute(Trigger * trig) {
+	vector<string>::iterator itr_print = trig->print.begin();
+	for (itr_print; itr_print != trig->print.end(); ++itr_print) {
+		cout << (*itr_print) << endl;
+	}
 
+	vector<string>::iterator itr_action = trig->action.begin();
+
+	for (itr_action; itr_action != trig->action.end(); ++itr_action) {
+		Base * object = NULL;
+		vector<string> user_input_split = split((*itr_action), ' ');
+		if (string("Add") == user_input_split.at(0) && user_input_split.size() == 4) {
+			actionAdd(user_input_split.at(1), user_input_split.at(3));
+		}
+		else if (string("Delete") == user_input_split.at(0) && user_input_split.size() == 2) {
+			actionDelete(user_input_split.at(1));
+		}
+		else if (string("Update") == user_input_split.at(0) && user_input_split.size() == 4) {
+			object = searchAll(user_input_split.at(1));
+			if (object) {
+				object->status = user_input_split.at(3);
+			}
+			else {
+				cout << "No object found." << endl;
+			}
+		}
+		else if (string("Game") == user_input_split.at(0) && string("Over") == user_input_split.at(1) && user_input_split.size() == 2) {
+			cout << "Game Over" << endl;
+			end_game = 1;
+		}
+	}
+}
+
+void Game::actionRun(string action) {
 	Base * object = NULL;
-
+	vector<string> user_input_split = split(action, ' ');
 	if (string("Add") == user_input_split.at(0) && user_input_split.size() == 4) {
-
+		actionAdd(user_input_split.at(1), user_input_split.at(3));
 	}
 	else if (string("Delete") == user_input_split.at(0) && user_input_split.size() == 2) {
 		actionDelete(user_input_split.at(1));
@@ -693,6 +793,59 @@ void Game::actionDelete(string o_name) {
 				}
 			}
 			i = 0;
+		}
+	}
+}
+
+void Game::actionAdd(string o_name, string l_name) {
+	Container * s_container = getContainer(l_name);
+	Room * s_room = getRoom(l_name);
+
+	Creature * a_creature = NULL;
+	Container * a_container = NULL;
+	Item * a_item = NULL;
+
+	if (s_room) {
+		a_creature = getCreature(o_name);
+		if (a_creature) {
+			s_room->creatures.push_back(a_creature);
+			return;
+		}
+
+		a_container = getContainer(o_name);
+		if (a_creature) {
+			s_room->containers.push_back(a_container);
+			return;
+		}
+
+		a_item = getItem(o_name);
+		if (a_item) {
+			a_item->owner = s_room->name;
+			s_room->items.push_back(a_item);
+			return;
+		}
+	}
+	else if (s_container) {
+		a_item = getItem(o_name);
+		if (a_item) {
+			a_item->owner = s_container->name;
+			s_container->items.push_back(a_item);
+			return;
+		}
+	}
+	else {
+		cout << "Object not able to be added to location." << endl;
+	}
+}
+
+void Game::attackExecute(Creature * crea, Item * item) {
+	Trigger * ret_trigger = NULL;
+	vector<string>::iterator itr_str = crea->vulnerabilities.begin();
+	for (itr_str; itr_str != crea->vulnerabilities.end(); ++itr_str) {
+		if ((*itr_str) == item->name) {
+			if (determineStatus(crea->attack)) {
+				actionExecute(crea->attack);
+			}
 		}
 	}
 }

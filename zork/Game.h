@@ -38,11 +38,16 @@ public:
 
 	unsigned char validateCommand(string cur_command);
 
-	void actionExecute(string action);
+	void attackExecute(Creature * crea, Item * item);
+
+	void actionExecute(Trigger * trig);
+
+	void actionRun(string action);
 
 	Base * searchAll(string o_name);
 
 	void actionDelete(string o_name);
+	void actionAdd(string o_name, string l_name);
 
 	vector<Item *> inventory;
 

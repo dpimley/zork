@@ -10,10 +10,10 @@ Trigger::Trigger(xml_node<> * acc){
 			type = acc->value();
 		}
 		else if (PRINT == acc->name()){
-			print = acc->value();
+			print.push_back(acc->value());
 		}
 		else if (ACTION == acc->name()){
-			action = acc->value();
+			action.push_back(acc->value());
 		}
 		else if (CONDITION == acc->name()){
 			Condition * _tmp1 = new Condition(acc);
