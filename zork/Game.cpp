@@ -56,7 +56,6 @@ void Game::start(){
 	unsigned char taken = 0;
 	unsigned char drop_token = 0;
 	unsigned char bad_creature = 1;
-	unsigned char e_i = 0;
 	unsigned char open_flag = 0;
 
 	Room * cur_room = getRoom("Entrance");
@@ -144,7 +143,6 @@ void Game::start(){
 							else if (cur_room->name != item_op->owner) {
 								container_check = getContainer(item_op->owner);
 								if (container_check){
-									e_i = 0;
 									for (vector<Container *>::iterator itr_container = cur_room->containers.begin(); itr_container != cur_room->containers.end(); ++itr_container) {
 										if ((*itr_container)->name == item_op->owner && container_check->open == 1) {
 											cout << "Item " << user_in_split.at(1) << " added to inventory." << endl;
@@ -152,7 +150,6 @@ void Game::start(){
 											removeFromContainer(container_check, item_op->name);
 											taken = 1;
 										}
-										e_i++;
 									}
 									if (!taken) {
 										cout << "Can't take that." << endl;
@@ -898,6 +895,7 @@ void Game::attackExecute(Creature * crea, Item * item) {
 	for (itr_str; itr_str != crea->vulnerabilities.end(); ++itr_str) {
 		if ((*itr_str) == item->name) {
 			if (determineStatus(crea->attack)) {
+				cout << "You assault the " << crea->name << " with the " << item->name << "." << endl;
 				removeFromInventory(item->name);
 				actionExecute(crea->attack);
 				return;
