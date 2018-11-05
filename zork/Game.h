@@ -46,6 +46,9 @@ public:
 
 	Base * searchAll(string o_name);
 
+	void removeFromInventory(string i_name);
+	void removeFromContainer(Container * cont, string i_name);
+
 	void actionDelete(string o_name);
 	void actionAdd(string o_name, string l_name);
 

@@ -142,8 +142,8 @@ void Game::start(){
 									for (vector<Container *>::iterator itr_container = cur_room->containers.begin(); itr_container != cur_room->containers.end(); ++itr_container) {
 										if ((*itr_container)->name == item_op->owner && container_check->open == 1) {
 											cout << "Item " << user_in_split.at(1) << " added to inventory." << endl;
-											//container_check->items.erase()
 											inventory.push_back(item_op);
+											removeFromContainer(container_check, item_op->name);
 											taken = 1;
 										}
 										e_i++;
@@ -212,6 +212,7 @@ void Game::start(){
 							cout << "You can't turn that on." << endl;
 						}
 						else {
+							cout << "You activate the " << item_op->name << "." << endl;
 							cout << item_op->turn_on_print << endl;
 							actionRun(item_op->turn_on_action);
 						}
@@ -238,21 +239,27 @@ void Game::start(){
 				else if (string("attack") == user_in_split.at(0) && string("with") == user_in_split.at(2) && user_in_split.size() == 4) {
 					creature_op = getCreature(user_in_split.at(1));
 					item_op = getItem(user_in_split.at(3));
-					vector<Creature *>::iterator creature_room = cur_room->creatures.begin();
-					for (creature_room; creature_room != cur_room->creatures.end(); ++creature_room) {
-						if ((*creature_room)->name == creature_op->name) {
-							bad_creature = 0;
-						}
+					if (!creature_op || !item_op) {
+						cout << "You are unable to attack." << endl;
 					}
-					if (!creature_op || bad_creature) {
-						cout << "You can't attack that creature." << endl;
-					}
-					else if (!item_op) {
-						cout << "You can't use that." << endl;
+					else if (!searchInventory(item_op->name)) {
+						cout << "You are unable to attack." << endl;
 					}
 					else {
-						attackExecute(creature_op, item_op);
+						vector<Creature *>::iterator creature_room = cur_room->creatures.begin();
+						for (creature_room; creature_room != cur_room->creatures.end(); ++creature_room) {
+							if ((*creature_room)->name == creature_op->name) {
+								bad_creature = 0;
+							}
+						}
+						if (!bad_creature) {
+							attackExecute(creature_op, item_op);
+						}
+						else {
+							cout << "You are unable to attack." << endl;
+						}
 					}
+
 
 					bad_creature = 1;
 				}
@@ -276,7 +283,7 @@ void Game::start(){
 								item_op->owner = container_check->name;
 								container_check->items.push_back(item_op);
 								cout << "Item " << item_op->name << " added to " << container_check->name << "." << endl;
-								//to do remove from inventory and check for accepts
+								removeFromInventory(item_op->name);
 							}
 						}
 					}
@@ -324,6 +331,30 @@ void Game::printInventory(){
 		}
 	}
 cout << endl;
+}
+
+void Game::removeFromInventory(string i_name) {
+	unsigned char e_i = 0;
+	vector<Item *>::iterator itr_item = inventory.begin();
+	for (itr_item; itr_item != inventory.end(); ++itr_item) {
+		if ((*itr_item)->name == i_name) {
+			inventory.erase(inventory.begin() + e_i);
+			return;
+		}
+		e_i++;
+	}
+}
+
+void Game::removeFromContainer(Container * cont, string i_name) {
+	unsigned char e_i = 0;
+	vector<Item *>::iterator itr_item = cont->items.begin();
+	for (itr_item; itr_item != cont->items.end(); ++itr_item) {
+		if ((*itr_item)->name == i_name) {
+			cont->items.erase(cont->items.begin() + e_i);
+			return;
+		}
+		e_i++;
+	}
 }
 
 Room * Game::getRoom(string r_name){
@@ -845,7 +876,9 @@ void Game::attackExecute(Creature * crea, Item * item) {
 		if ((*itr_str) == item->name) {
 			if (determineStatus(crea->attack)) {
 				actionExecute(crea->attack);
+				return;
 			}
 		}
 	}
+	cout << "You are unable to attack." << endl;
 }
