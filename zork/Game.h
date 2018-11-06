@@ -63,7 +63,7 @@ public:
 	vector<Creature *> creatures;
 	unsigned char end_game = 0;
 	unsigned char input_override = 0;
-	string input_override_str = "";
+	vector<string> input_override_str;
 };
 
 #endif /* GAME_H */

@@ -66,17 +66,20 @@ void Game::start(){
 	}
 	cout << cur_room->description << endl;
 
-	while (!end_game){
+	while (!end_game || input_override_str.size() != 0){
 		if (!input_override) {
 			getline(cin, input_line);
 			cur_command = input_line.substr(0, input_line.find(" "));
 			user_in_split = split(input_line, ' ');
 		}
 		else {
-			input_line = input_override_str;
+			input_line = input_override_str.at(0);
 			cur_command = input_line.substr(0, input_line.find(" "));
 			user_in_split = split(input_line, ' ');
-			input_override = 0;
+			input_override_str.erase(input_override_str.begin());
+			if (input_override_str.size() == 0) {
+				input_override = 0;
+			}
 		}
 
 		if (validateCommand(cur_command)){
@@ -103,7 +106,7 @@ void Game::start(){
 				else if (string("open exit") == input_line) {
 					if (string("exit") == cur_room->type) {
 						end_game = 1;
-						cout << "Game Over" << endl;
+						//cout << "Game Over" << endl;
 					}
 					else {
 						cout << "Not at Exit." << endl;
@@ -298,6 +301,9 @@ void Game::start(){
 										cout << "Item " << item_op->name << " added to " << container_check->name << "." << endl;
 										removeFromInventory(item_op->name);
 									}
+									else {
+										cout << "It does not accept it." << endl;
+									}
 								}
 							}
 						}
@@ -311,6 +317,7 @@ void Game::start(){
 			cout << "Error" << endl;
 		}
 	}
+	cout << "Game Over" << endl;
 }
 
 unsigned char Game::containerAccepts(Container * cont, Item * item){
@@ -755,13 +762,15 @@ void Game::actionExecute(Trigger * trig) {
 			}
 		}
 		else if (string("Game") == user_input_split.at(0) && string("Over") == user_input_split.at(1) && user_input_split.size() == 2) {
-			cout << "Game Over" << endl;
+			if (input_override_str.size() == 0) {
+				cout << "Game Over" << endl;
+			}
 			end_game = 1;
 		}
 		else if (validateCommand((user_input_split.at(0)))) {
 			trig->times_executed += 1;
 			input_override = 1;
-			input_override_str = (*itr_action);
+			input_override_str.push_back((*itr_action));
 		}
 	}
 }
@@ -790,7 +799,7 @@ void Game::actionRun(string action) {
 	}
 	else if (validateCommand((user_input_split.at(0)))) {
 		input_override = 1;
-		input_override_str = action;
+		input_override_str.push_back(action);
 	}
 }
 

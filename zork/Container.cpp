@@ -20,6 +20,9 @@ Container::Container(xml_node<> * acc){
 			_tmp1->name = acc->value();
 			items.push_back(_tmp1);
 		}
+		else if (ACCEPT == acc->name()) {
+			accept.push_back(acc->value());
+		}
 		else if (TRIGGER == acc->name()){
 			Trigger * _tmp1 = new Trigger(acc);
 			triggers.push_back(_tmp1);
