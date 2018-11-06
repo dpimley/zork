@@ -18,7 +18,7 @@ Trigger * Base::searchTriggers(string cur_command) {
 Trigger * Base::searchNCTriggers() {
 	vector<Trigger *>::iterator itr_trigger = triggers.begin();
 	while (itr_trigger != triggers.end()) {
-		if ((*itr_trigger)) {
+		if ((*itr_trigger) != NULL && (*itr_trigger)->command == string("")) {
 			return (*itr_trigger);
 		}
 		++itr_trigger;
